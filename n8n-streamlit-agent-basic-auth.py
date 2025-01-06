@@ -49,11 +49,17 @@ def main():
         with st.chat_message("user"):
             st.write(user_input)
 
-        # Get LLM response
-        llm_response = send_message_to_llm(st.session_state.session_id, user_input)
 
+        # Get LLM response with spinner on while waiting
+
+        with st.spinner('Sekundėlę ...'):
+            llm_response = send_message_to_llm(st.session_state.session_id, user_input)
+        
+        
         # Add LLM response to chat history
+        
         st.session_state.messages.append({"role": "assistant", "content": llm_response})
+        
         with st.chat_message("assistant"):
             st.write(llm_response)
 
