@@ -68,18 +68,13 @@ def main():
     st.title("FinRAGas - Lietuvos Banko Sprendimų Asistentas")
     st.markdown("*Išmanus draudimo sprendimų paieškos įrankis*")
 
-    # Create two columns for layout
-    col1, col2 = st.columns([0.6, 0.4])
+    # Create dashboard
+    st.subheader("Dashboard")
+    dashboard = Dashboard()
+    dashboard.display_metrics()
+    dashboard.display_charts()
 
-    # Dashboard in the right column
-    with col2:
-        st.subheader("Dashboard")
-        dashboard = Dashboard()
-        dashboard.display_metrics()
-        dashboard.display_charts()
-
-    # Chat interface in the left column
-    with col1:
+    # Chat interface below dashboard
         # Initialize session state
         if "messages" not in st.session_state:
             st.session_state.messages = []
