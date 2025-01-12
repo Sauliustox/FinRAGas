@@ -56,42 +56,67 @@ class Dashboard:
         
         # Convert to DataFrame
         df = pd.DataFrame(response.data)
-        df['Date'] = pd.to_datetime(df['created_at']).dt.date
+        df['Date'] = pd.to_datetime(df['created_at'])
         
-        # Count daily documents and calculate other metrics
-        daily_metrics = df.groupby('Date').agg({
-            'id': 'count',  # Count documents per day
-            'created_at': lambda x: (max(x) - min(x)).total_seconds() if len(x) > 1 else 0,  # Time span between first and last doc
-            'company_name': 'nunique'  # Unique companies per day
-        }).reset_index()
+        # Select and rename relevant columns
+        df = df[['Date', 'doc_id', 'company_name', 'decision', 'product', 'LB_complaint_case', 'decision_date']]
         
-        # Rename columns to match existing code
-        daily_metrics.columns = ['Date', 'Queries', 'Response_Time', 'Satisfaction']
-        
-        # Convert Date back to datetime for plotting
-        daily_metrics['Date'] = pd.to_datetime(daily_metrics['Date'])
+        # Sort by date
+        df = df.sort_values('Date', ascending=False)
         
         return daily_metrics
 
     def display_metrics(self):
+        # Calculate summary metrics
+        total_docs = len(self.df)
+        unique_companies = self.df['company_name'].nunique()
+        latest_date = self.df['Date'].max().strftime('%Y-%m-%d')
+        
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric("Documents Today", f"{self.df['Queries'].iloc[-1]}")
+            st.metric("Total Documents", f"{total_docs}")
         with col2:
-            st.metric("Processing Time", f"{self.df['Response_Time'].iloc[-1]:.0f}s")
+            st.metric("Unique Companies", f"{unique_companies}")
         with col3:
-            st.metric("Unique Companies", f"{self.df['Satisfaction'].iloc[-1]:.0f}")
+            st.metric("Latest Update", f"{latest_date}")
 
     def display_charts(self):
-        # Documents over time
-        fig_queries = px.line(self.df, x='Date', y='Queries', 
-                            title='Daily Processed Documents')
-        st.plotly_chart(fig_queries, use_container_width=True)
+        # Display recent documents table
+        st.subheader("Recent Documents")
+        st.dataframe(
+            self.df.rename(columns={
+                'Date': 'Data',
+                'doc_id': 'Dokumento ID',
+                'company_name': 'Įmonė',
+                'decision': 'Sprendimas',
+                'product': 'Produktas',
+                'LB_complaint_case': 'Bylos Nr.',
+                'decision_date': 'Sprendimo data'
+            }),
+            hide_index=True
+        )
 
-        # Companies per day trend
-        fig_response = px.line(self.df, x='Date', y='Satisfaction',
-                             title='Daily Unique Companies')
-        st.plotly_chart(fig_response, use_container_width=True)
+        # Documents by company chart
+        docs_by_company = self.df['company_name'].value_counts().head(10)
+        fig_company = px.bar(
+            x=docs_by_company.values,
+            y=docs_by_company.index,
+            title='Top 10 Companies by Document Count',
+            labels={'x': 'Number of Documents', 'y': 'Company'},
+            orientation='h'
+        )
+        st.plotly_chart(fig_company, use_container_width=True)
+
+        # Documents by product type
+        docs_by_product = self.df['product'].value_counts().head(10)
+        fig_product = px.bar(
+            x=docs_by_product.values,
+            y=docs_by_product.index,
+            title='Top 10 Product Types',
+            labels={'x': 'Number of Documents', 'y': 'Product Type'},
+            orientation='h'
+        )
+        st.plotly_chart(fig_product, use_container_width=True)
 
 def main():
     st.title("FinRAGas - Lietuvos Banko Sprendimų Asistentas")
