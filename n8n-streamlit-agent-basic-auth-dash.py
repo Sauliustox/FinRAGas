@@ -150,21 +150,6 @@ def main():
         dashboard.display_metrics()
         
         # Charts in expandable section
-        st.markdown("""
-            <style>
-                .dashboard-charts {
-                    height: 300px;
-                    overflow-y: auto;
-                }
-            </style>
-        """, unsafe_allow_html=True)
-        with st.expander("Show Charts", expanded=True):
-            with st.container():
-                # st.markdown('<div class="dashboard-charts">', unsafe_allow_html=True)
-                dashboard.display_charts()
-                # st.markdown('</div>', unsafe_allow_html=True)
-
-        # Charts in expandable section
         with st.expander("Show Charts", expanded=True):
             dashboard.display_charts()
 
