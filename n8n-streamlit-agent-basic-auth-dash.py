@@ -68,11 +68,13 @@ def main():
     st.title("FinRAGas - Lietuvos Banko Sprendimų Asistentas")
     st.markdown("*Išmanus draudimo sprendimų paieškos įrankis*")
 
-    # Create dashboard
-    st.subheader("Dashboard")
-    dashboard = Dashboard()
-    dashboard.display_metrics()
-    dashboard.display_charts()
+    # Create dashboard in a container
+    with st.container():
+        st.subheader("Dashboard")
+        dashboard = Dashboard()
+        dashboard.display_metrics()
+        with st.expander("Show Charts", expanded=True):
+            dashboard.display_charts()
 
     # Chat interface below dashboard
     # Initialize session state
