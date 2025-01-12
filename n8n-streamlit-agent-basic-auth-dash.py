@@ -75,35 +75,35 @@ def main():
     dashboard.display_charts()
 
     # Chat interface below dashboard
-        # Initialize session state
-        if "messages" not in st.session_state:
-            st.session_state.messages = []
-        if "session_id" not in st.session_state:
-            st.session_state.session_id = generate_session_id()
+    # Initialize session state
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    if "session_id" not in st.session_state:
+        st.session_state.session_id = generate_session_id()
 
-        # Display chat messages
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.write(message["content"])
+    # Display chat messages
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.write(message["content"])
 
-        # User input
-        user_input = st.chat_input("Type your message here...")
-     
-        if user_input:
-            # Add user message to chat history
-            st.session_state.messages.append({"role": "user", "content": user_input})
-            with st.chat_message("user"):
-                st.write(user_input)
+    # User input
+    user_input = st.chat_input("Type your message here...")
+ 
+    if user_input:
+        # Add user message to chat history
+        st.session_state.messages.append({"role": "user", "content": user_input})
+        with st.chat_message("user"):
+            st.write(user_input)
 
-            # Get LLM response with spinner on while waiting
-            with st.spinner('Sekundėlę ...'):
-                llm_response = send_message_to_llm(st.session_state.session_id, user_input)
-            
-            # Add LLM response to chat history
-            st.session_state.messages.append({"role": "assistant", "content": llm_response})
-            
-            with st.chat_message("assistant"):
-                st.write(llm_response)
+        # Get LLM response with spinner on while waiting
+        with st.spinner('Sekundėlę ...'):
+            llm_response = send_message_to_llm(st.session_state.session_id, user_input)
+        
+        # Add LLM response to chat history
+        st.session_state.messages.append({"role": "assistant", "content": llm_response})
+        
+        with st.chat_message("assistant"):
+            st.write(llm_response)
 
 if __name__ == "__main__":
     main()
