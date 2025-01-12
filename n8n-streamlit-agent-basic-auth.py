@@ -3,8 +3,8 @@ import requests
 import uuid
 
 # Constants
-WEBHOOK_URL = "https://n8n.savaitgalioprojektai.lt/webhook/a3ea6a63-adfa-46d2-83cb-bc05cb95c921"
-BEARER_TOKEN = "LABAS"
+WEBHOOK_URL = st.secrets["WEBHOOK_URL"] 
+BEARER_TOKEN = st.secrets["BEARER_TOKEN"] 
 
 def generate_session_id():
     return str(uuid.uuid4())
