@@ -123,10 +123,11 @@ class Dashboard:
         df_monthly['Month'] = pd.to_datetime(df_monthly['decision_date']).dt.to_period('M').astype(str)
         monthly_company = pd.crosstab(df_monthly['Month'], df_monthly['company_name'])
         
-        fig_monthly = px.area(
+        fig_monthly = px.bar(
             monthly_company,
             title='Monthly Documents by Company',
             labels={'value': 'Number of Documents', 'Month': 'Month', 'company_name': 'Company'},
+            barmode='stack'
         )
         fig_monthly.update_layout(
             xaxis_title="Month",
