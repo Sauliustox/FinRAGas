@@ -137,14 +137,17 @@ class Dashboard:
 
 def main():
     st.set_page_config(layout="wide")
-    st.title("FinRAGas - Lietuvos Banko Sprendimų Asistentas")
-    st.markdown("*Išmanus draudimo sprendimų paieškos įrankis*")
+    _, col2, _ = st.columns([0.1, 0.8, 0.1])
+    
+    with col2:
+        st.title("FinRAGas - Lietuvos Banko Sprendimų Asistentas")
+        st.markdown("*Išmanus draudimo sprendimų paieškos įrankis*")
 
     # Create two columns for dashboard and chat
-    col1, col2 = st.columns([0.6, 0.4])
+    _, chat_col, dash_col, _ = st.columns([0.1, 0.3, 0.5, 0.1])
 
     # Dashboard container on the left
-    with col1:
+    with dash_col:
         st.subheader("Dashboard")
         dashboard = Dashboard()
         dashboard.display_metrics()
@@ -154,38 +157,22 @@ def main():
             dashboard.display_charts()
 
     # Chat interface on the right
-    with col2:
-        st.subheader("Chat")
+    with chat_col:
+        
         # Initialize session state
         if "messages" not in st.session_state:
             st.session_state.messages = []
         if "session_id" not in st.session_state:
             st.session_state.session_id = generate_session_id()
 
-        # Use custom CSS to create scrollable container for chat
-        st.markdown("""
-            <style>
-                .chat-container {
-                    height: 800px;
-                    overflow-y: auto;
-                    background-color: #f0f2f6;
-                    border-radius: 10px;
-                    padding: 10px;
-                }
-            </style>
-        """, unsafe_allow_html=True)
-
-        with st.container():
-            st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-            # Display chat messages
-            for message in st.session_state.messages:
-                with st.chat_message(message["role"]):
-                    st.write(message["content"])
-            st.markdown('</div>', unsafe_allow_html=True)
+        # Display chat messages
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.write(message["content"])
 
         # User input
         user_input = st.chat_input("Type your message here...")
-     
+    
         if user_input:
             # Add user message to chat history
             st.session_state.messages.append({"role": "user", "content": user_input})
