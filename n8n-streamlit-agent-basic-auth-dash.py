@@ -118,6 +118,24 @@ class Dashboard:
         )
         st.plotly_chart(fig_product, use_container_width=True)
 
+        # Monthly documents by company stacked area chart
+        df_monthly = self.df.copy()
+        df_monthly['Month'] = pd.to_datetime(df_monthly['decision_date']).dt.to_period('M').astype(str)
+        monthly_company = pd.crosstab(df_monthly['Month'], df_monthly['company_name'])
+        
+        fig_monthly = px.area(
+            monthly_company,
+            title='Monthly Documents by Company',
+            labels={'value': 'Number of Documents', 'Month': 'Month', 'company_name': 'Company'},
+        )
+        fig_monthly.update_layout(
+            xaxis_title="Month",
+            yaxis_title="Number of Documents",
+            showlegend=True,
+            legend_title="Company"
+        )
+        st.plotly_chart(fig_monthly, use_container_width=True)
+
 def main():
     st.title("FinRAGas - Lietuvos Banko Sprendimų Asistentas")
     st.markdown("*Išmanus draudimo sprendimų paieškos įrankis*")
