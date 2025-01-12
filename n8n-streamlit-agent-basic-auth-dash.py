@@ -80,19 +80,19 @@ class Dashboard:
 
     def display_charts(self):
         # Display recent documents table
-        st.subheader("Recent Documents")
-        st.dataframe(
-            self.df.rename(columns={
-                'Date': 'Data',
-                'doc_id': 'Dokumento ID',
-                'company_name': 'Įmonė',
-                'decision': 'Sprendimas',
-                'product': 'Produktas',
-                'LB_complaint_case': 'Bylos Nr.',
-                'decision_date': 'Sprendimo data'
-            }),
-            hide_index=True
-        )
+        # st.subheader("Recent Documents")
+        # st.dataframe(
+        #     self.df.rename(columns={
+        #         'Date': 'Data',
+        #         'doc_id': 'Dokumento ID',
+        #         'company_name': 'Įmonė',
+        #         'decision': 'Sprendimas',
+        #         'product': 'Produktas',
+        #         'LB_complaint_case': 'Bylos Nr.',
+        #         'decision_date': 'Sprendimo data'
+        #     }),
+        #     hide_index=True
+        # )
 
         # Documents by company chart
         docs_by_company = self.df['company_name'].value_counts().head(10)
@@ -103,7 +103,7 @@ class Dashboard:
             labels={'x': 'Number of Documents', 'y': 'Company'},
             orientation='h'
         )
-        st.plotly_chart(fig_company, use_container_width=True)
+        # st.plotly_chart(fig_company, use_container_width=True)
 
         # Documents by product type
         docs_by_product = self.df['product'].value_counts().head(10)
@@ -114,7 +114,7 @@ class Dashboard:
             labels={'x': 'Number of Documents', 'y': 'Product Type'},
             orientation='h'
         )
-        st.plotly_chart(fig_product, use_container_width=True)
+        # st.plotly_chart(fig_product, use_container_width=True)
 
         # Monthly documents by company stacked area chart
         df_monthly = self.df.copy()
