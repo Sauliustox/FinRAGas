@@ -3,8 +3,6 @@ import requests
 import uuid
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 from supabase import create_client
 
@@ -105,7 +103,7 @@ class Dashboard:
             labels={'x': 'Number of Documents', 'y': 'Company'},
             orientation='h'
         )
-        # st.plotly_chart(fig_company, use_container_width=True)
+        st.plotly_chart(fig_company, use_container_width=True)
 
         # Documents by product type
         docs_by_product = self.df['product'].value_counts().head(10)
@@ -118,60 +116,23 @@ class Dashboard:
         )
         # st.plotly_chart(fig_product, use_container_width=True)
 
-        # Monthly documents charts
+        # Monthly documents by company stacked area chart
         df_monthly = self.df.copy()
         df_monthly['Month'] = pd.to_datetime(df_monthly['decision_date']).dt.to_period('M').astype(str)
-        
-        # Create two subplots
-        from plotly.subplots import make_subplots
-        fig_monthly = make_subplots(rows=2, cols=1, 
-                                  subplot_titles=('Monthly Documents by Company', 'Total Monthly Documents'),
-                                  vertical_spacing=0.15,
-                                  row_heights=[0.7, 0.3])
-        
-        # Top subplot - stacked by company
         monthly_company = pd.crosstab(df_monthly['Month'], df_monthly['company_name'])
-        monthly_company = monthly_company.sort_index()
-        last_12_months = monthly_company.tail(12)
         
-        for company in last_12_months.columns:
-            fig_monthly.add_trace(
-                go.Bar(
-                    name=company,
-                    x=last_12_months.index,
-                    y=last_12_months[company],
-                    stackgroup='company'
-                ),
-                row=1, col=1
-            )
-            
-        # Bottom subplot - total documents
-        monthly_total = df_monthly['Month'].value_counts().sort_index()
-        fig_monthly.add_trace(
-            go.Bar(
-                name='Total Documents',
-                x=monthly_total.index,
-                y=monthly_total.values,
-                marker_color='rgb(158,202,225)'
-            ),
-            row=2, col=1
+        fig_monthly = px.bar(
+            monthly_company,
+            title='Monthly Documents by Company',
+            labels={'value': 'Number of Documents', 'Month': 'Month', 'company_name': 'Company'},
+            barmode='stack'
         )
-        
-        # Update layout
         fig_monthly.update_layout(
-            height=800,
-            width=1200,
-            showlegend=True,
-            legend_title="Company",
-            xaxis_title="",
-            xaxis2_title="Month",
+            xaxis_title="Month",
             yaxis_title="Number of Documents",
-            yaxis2_title="Number of Documents"
+            showlegend=True,
+            legend_title="Company"
         )
-        
-        # Update axes
-        fig_monthly.update_xaxes(type='category', row=1, col=1)
-        fig_monthly.update_xaxes(type='category', row=2, col=1)
         st.plotly_chart(fig_monthly, use_container_width=True)
 
 def main():
@@ -198,9 +159,9 @@ def main():
         """, unsafe_allow_html=True)
         with st.expander("Show Charts", expanded=True):
             with st.container():
-                st.markdown('<div class="dashboard-charts">', unsafe_allow_html=True)
+                # st.markdown('<div class="dashboard-charts">', unsafe_allow_html=True)
                 dashboard.display_charts()
-                st.markdown('</div>', unsafe_allow_html=True)
+                # st.markdown('</div>', unsafe_allow_html=True)
 
     # Chat interface below dashboard
         with st.container():
