@@ -42,11 +42,8 @@ class Dashboard:
         start_date = end_date - timedelta(days=30)
         
         # Query Supabase table
-        response = self.supabase.table('chat_metrics').select('*')\
-            .gte('created_at', start_date.isoformat())\
-            .lte('created_at', end_date.isoformat())\
-            .execute()
-        
+        response = self.supabase.table('lb_docs_processed').select('*').execute()
+        print (len(response.data))
         if len(response.data) == 0:
             # Return empty DataFrame with expected columns if no data
             return pd.DataFrame({
