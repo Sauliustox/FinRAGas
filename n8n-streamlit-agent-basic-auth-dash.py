@@ -43,7 +43,8 @@ class Dashboard:
         
         # Query Supabase table
         response = self.supabase.table('lb_docs_processed').select('*').execute()
-        print (len(response.data))
+        print("Data from Supabase:", len(response.data))
+        print("First record:", response.data[0] if response.data else "No data")
         if len(response.data) == 0:
             # Return empty DataFrame with expected columns if no data
             return pd.DataFrame({
