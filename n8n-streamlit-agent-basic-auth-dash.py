@@ -68,15 +68,32 @@ def main():
     st.title("FinRAGas - Lietuvos Banko Sprendimų Asistentas")
     st.markdown("*Išmanus draudimo sprendimų paieškos įrankis*")
 
-    # Create dashboard in a container
-    with st.container():
-        st.subheader("Dashboard")
-        dashboard = Dashboard()
-        dashboard.display_metrics()
-        with st.expander("Show Charts", expanded=True):
-            dashboard.display_charts()
+    # Create two columns for the entire page layout
+    dashboard_col, chat_col = st.columns(2)
 
-    # Chat interface below dashboard
+    # Dashboard in left column with fixed height
+    with dashboard_col:
+        with st.container():
+            st.subheader("Dashboard")
+            dashboard = Dashboard()
+            dashboard.display_metrics()
+            # Use custom CSS to create scrollable container for charts
+            st.markdown("""
+                <style>
+                    .dashboard-charts {
+                        height: 600px;
+                        overflow-y: auto;
+                    }
+                </style>
+            """, unsafe_allow_html=True)
+            with st.expander("Show Charts", expanded=True):
+                with st.container():
+                    st.markdown('<div class="dashboard-charts">', unsafe_allow_html=True)
+                    dashboard.display_charts()
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+    # Chat interface in right column
+    with chat_col:
     # Initialize session state
     if "messages" not in st.session_state:
         st.session_state.messages = []
