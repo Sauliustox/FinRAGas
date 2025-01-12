@@ -3,12 +3,14 @@ import requests
 import uuid
 import pandas as pd
 import plotly.express as px
-import random
 from datetime import datetime, timedelta
+from supabase import create_client
 
 # Constants
 WEBHOOK_URL = st.secrets["WEBHOOK_URL"] 
-BEARER_TOKEN = st.secrets["BEARER_TOKEN"] 
+BEARER_TOKEN = st.secrets["BEARER_TOKEN"]
+SUPABASE_URL = st.secrets["SUPABASE_URL"]
+SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 
 def generate_session_id():
     return str(uuid.uuid4())
@@ -31,18 +33,44 @@ def send_message_to_llm(session_id, message):
 
 class Dashboard:
     def __init__(self):
-        self.df = self.generate_mock_data()
+        self.supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        self.df = self.load_data_from_supabase()
 
-    def generate_mock_data(self):
-        # Generate mock data for the dashboard
-        dates = pd.date_range(end=datetime.now(), periods=30, freq='D')
-        data = {
-            'Date': dates,
-            'Queries': [random.randint(50, 200) for _ in range(30)],
-            'Response_Time': [random.uniform(0.5, 3.0) for _ in range(30)],
-            'Satisfaction': [random.uniform(4.0, 5.0) for _ in range(30)]
-        }
-        return pd.DataFrame(data)
+    def load_data_from_supabase(self):
+        # Load last 30 days of data from Supabase
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=30)
+        
+        # Query Supabase table
+        response = self.supabase.table('chat_metrics').select('*')\
+            .gte('created_at', start_date.isoformat())\
+            .lte('created_at', end_date.isoformat())\
+            .execute()
+        
+        if len(response.data) == 0:
+            # Return empty DataFrame with expected columns if no data
+            return pd.DataFrame({
+                'Date': [],
+                'Queries': [],
+                'Response_Time': [],
+                'Satisfaction': []
+            })
+        
+        # Convert to DataFrame
+        df = pd.DataFrame(response.data)
+        df['Date'] = pd.to_datetime(df['created_at'])
+        
+        # Aggregate daily metrics
+        daily_metrics = df.groupby('Date').agg({
+            'queries': 'sum',
+            'response_time': 'mean',
+            'satisfaction': 'mean'
+        }).reset_index()
+        
+        # Rename columns to match existing code
+        daily_metrics.columns = ['Date', 'Queries', 'Response_Time', 'Satisfaction']
+        
+        return daily_metrics
 
     def display_metrics(self):
         col1, col2, col3 = st.columns(3)
