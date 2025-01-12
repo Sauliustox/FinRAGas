@@ -43,8 +43,6 @@ class Dashboard:
         
         # Query Supabase table
         response = self.supabase.table('lb_docs_processed').select('*').execute()
-        print("Data from Supabase:", len(response.data))
-        print("First record:", response.data[0] if response.data else "No data")
         if len(response.data) == 0:
             # Return empty DataFrame with expected columns if no data
             return pd.DataFrame({
@@ -138,6 +136,7 @@ class Dashboard:
         st.plotly_chart(fig_monthly, use_container_width=True)
 
 def main():
+    # st.set_page_config(layout="wide")
     st.title("FinRAGas - Lietuvos Banko Sprendimų Asistentas")
     st.markdown("*Išmanus draudimo sprendimų paieškos įrankis*")
 
