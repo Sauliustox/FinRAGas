@@ -55,38 +55,41 @@ class Dashboard:
         
         # Convert to DataFrame
         df = pd.DataFrame(response.data)
-        df['Date'] = pd.to_datetime(df['created_at'])
+        df['Date'] = pd.to_datetime(df['created_at']).dt.date
         
-        # Aggregate daily metrics
+        # Count daily documents and calculate other metrics
         daily_metrics = df.groupby('Date').agg({
-            'queries': 'sum',
-            'response_time': 'mean',
-            'satisfaction': 'mean'
+            'id': 'count',  # Count documents per day
+            'created_at': lambda x: (max(x) - min(x)).total_seconds() if len(x) > 1 else 0,  # Time span between first and last doc
+            'company_name': 'nunique'  # Unique companies per day
         }).reset_index()
         
         # Rename columns to match existing code
         daily_metrics.columns = ['Date', 'Queries', 'Response_Time', 'Satisfaction']
+        
+        # Convert Date back to datetime for plotting
+        daily_metrics['Date'] = pd.to_datetime(daily_metrics['Date'])
         
         return daily_metrics
 
     def display_metrics(self):
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric("Daily Queries", f"{self.df['Queries'].iloc[-1]}")
+            st.metric("Documents Today", f"{self.df['Queries'].iloc[-1]}")
         with col2:
-            st.metric("Avg Response Time", f"{self.df['Response_Time'].iloc[-1]:.2f}s")
+            st.metric("Processing Time", f"{self.df['Response_Time'].iloc[-1]:.0f}s")
         with col3:
-            st.metric("User Satisfaction", f"{self.df['Satisfaction'].iloc[-1]:.1f}/5.0")
+            st.metric("Unique Companies", f"{self.df['Satisfaction'].iloc[-1]:.0f}")
 
     def display_charts(self):
-        # Queries over time
+        # Documents over time
         fig_queries = px.line(self.df, x='Date', y='Queries', 
-                            title='Daily Queries Trend')
+                            title='Daily Processed Documents')
         st.plotly_chart(fig_queries, use_container_width=True)
 
-        # Response time trend
-        fig_response = px.line(self.df, x='Date', y='Response_Time',
-                             title='Response Time Trend')
+        # Companies per day trend
+        fig_response = px.line(self.df, x='Date', y='Satisfaction',
+                             title='Daily Unique Companies')
         st.plotly_chart(fig_response, use_container_width=True)
 
 def main():
