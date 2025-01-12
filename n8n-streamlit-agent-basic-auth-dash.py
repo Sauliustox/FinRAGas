@@ -121,17 +121,30 @@ class Dashboard:
         df_monthly['Month'] = pd.to_datetime(df_monthly['decision_date']).dt.to_period('M').astype(str)
         monthly_company = pd.crosstab(df_monthly['Month'], df_monthly['company_name'])
         
+        # Sort months chronologically
+        monthly_company = monthly_company.sort_index()
+        
+        # Get the last 12 months
+        last_12_months = monthly_company.tail(12)
+        
         fig_monthly = px.bar(
-            monthly_company,
+            last_12_months,
             title='Monthly Documents by Company',
             labels={'value': 'Number of Documents', 'Month': 'Month', 'company_name': 'Company'},
             barmode='stack'
         )
+        
+        # Update layout with scrolling and zooming options
         fig_monthly.update_layout(
             xaxis_title="Month",
             yaxis_title="Number of Documents",
             showlegend=True,
-            legend_title="Company"
+            legend_title="Company",
+            width=1200,  # Make the chart wider
+            xaxis=dict(
+                rangeslider=dict(visible=True),  # Add range slider
+                type='category'
+            )
         )
         st.plotly_chart(fig_monthly, use_container_width=True)
 
