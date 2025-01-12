@@ -136,16 +136,17 @@ class Dashboard:
         st.plotly_chart(fig_monthly, use_container_width=True)
 
 def main():
-    # st.set_page_config(layout="wide")
+    st.set_page_config(layout="wide")
     st.title("FinRAGas - Lietuvos Banko Sprendimų Asistentas")
     st.markdown("*Išmanus draudimo sprendimų paieškos įrankis*")
 
-    # Dashboard container at the top
-    with st.container():
+    # Create two columns for dashboard and chat
+    col1, col2 = st.columns([0.6, 0.4])
+
+    # Dashboard container on the left
+    with col1:
         st.subheader("Dashboard")
         dashboard = Dashboard()
-        
-        # Metrics in columns
         dashboard.display_metrics()
         
         # Charts in expandable section
@@ -163,35 +164,42 @@ def main():
                 dashboard.display_charts()
                 # st.markdown('</div>', unsafe_allow_html=True)
 
-    # Chat interface below dashboard
+        # Charts in expandable section
+        with st.expander("Show Charts", expanded=True):
+            dashboard.display_charts()
+
+    # Chat interface on the right
+    with col2:
+        st.subheader("Chat")
+        # Initialize session state
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
+        if "session_id" not in st.session_state:
+            st.session_state.session_id = generate_session_id()
+
+        # Use custom CSS to create scrollable container for chat
+        st.markdown("""
+            <style>
+                .chat-container {
+                    height: 800px;
+                    overflow-y: auto;
+                    background-color: #f0f2f6;
+                    border-radius: 10px;
+                    padding: 10px;
+                }
+            </style>
+        """, unsafe_allow_html=True)
+
         with st.container():
-            st.subheader("Chat")
-            # Initialize session state
-            if "messages" not in st.session_state:
-                st.session_state.messages = []
-            if "session_id" not in st.session_state:
-                st.session_state.session_id = generate_session_id()
+            st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+            # Display chat messages
+            for message in st.session_state.messages:
+                with st.chat_message(message["role"]):
+                    st.write(message["content"])
+            st.markdown('</div>', unsafe_allow_html=True)
 
-            # Use custom CSS to create scrollable container for chat
-            st.markdown("""
-                <style>
-                    .chat-container {
-                        height: 600px;
-                        overflow-y: auto;
-                    }
-                </style>
-            """, unsafe_allow_html=True)
-
-            with st.container():
-                st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-                # Display chat messages
-                for message in st.session_state.messages:
-                    with st.chat_message(message["role"]):
-                        st.write(message["content"])
-                st.markdown('</div>', unsafe_allow_html=True)
-
-            # User input
-            user_input = st.chat_input("Type your message here...")
+        # User input
+        user_input = st.chat_input("Type your message here...")
      
             if user_input:
                 # Add user message to chat history
