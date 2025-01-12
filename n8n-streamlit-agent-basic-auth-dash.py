@@ -64,7 +64,7 @@ class Dashboard:
         # Sort by date
         df = df.sort_values('Date', ascending=False)
         
-        return daily_metrics
+        return df
 
     def display_metrics(self):
         # Calculate summary metrics
