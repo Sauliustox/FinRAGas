@@ -95,7 +95,7 @@ class Dashboard:
         # )
 
         # Documents by company chart
-        docs_by_company = self.df['company_name'].value_counts().sort_values(ascending=True).head(10)
+        docs_by_company = self.df['company_name'].value_counts().sort_values(ascending=True).tail(10)
         fig_company = px.bar(
             x=docs_by_company.values,
             y=docs_by_company.index,

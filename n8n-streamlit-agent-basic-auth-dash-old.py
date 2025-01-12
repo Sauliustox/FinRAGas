@@ -79,8 +79,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Constants
-WEBHOOK_URL = "https://n8n.savaitgalioprojektai.lt/webhook/f9f3653a-633e-4949-91c7-70bad1425006"
-BEARER_TOKEN = "LABAS"
+WEBHOOK_URL = st.secrets["WEBHOOK_URL"] 
+BEARER_TOKEN = st.secrets["BEARER_TOKEN"]
 MAX_RETRIES = 3
 RETRY_DELAY = 1
 
