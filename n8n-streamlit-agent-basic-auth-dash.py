@@ -79,8 +79,9 @@ class Dashboard:
         with col3:
             st.metric("Latest Update", f"{latest_date}")
 
-    def update_filter(self, start_date, end_date):
-        mask = (pd.to_datetime(self.df['decision_date']) >= start_date) & (pd.to_datetime(self.df['decision_date']) <= end_date)
+    def update_filter(self, start_datetime, end_datetime):
+        decision_dates = pd.to_datetime(self.df['decision_date'])
+        mask = (decision_dates >= start_datetime) & (decision_dates <= end_datetime)
         self.filtered_df = self.df[mask]
 
     def display_charts(self):
@@ -166,7 +167,9 @@ def main():
             end_date = st.date_input("End Date", max_date, min_value=min_date, max_value=max_date)
         
         # Update filtered data based on date range
-        dashboard.update_filter(start_date, end_date)
+        start_datetime = pd.to_datetime(start_date)
+        end_datetime = pd.to_datetime(end_date) + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)
+        dashboard.update_filter(start_datetime, end_datetime)
         
         # Display metrics and charts
         dashboard.display_metrics()
