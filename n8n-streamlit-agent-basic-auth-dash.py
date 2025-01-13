@@ -35,6 +35,7 @@ class Dashboard:
     def __init__(self):
         self.supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
         self.df = self.load_data_from_supabase()
+        self.filtered_df = self.df.copy()
 
     def load_data_from_supabase(self):
         # Load last 30 days of data from Supabase
@@ -66,9 +67,9 @@ class Dashboard:
 
     def display_metrics(self):
         # Calculate summary metrics
-        total_docs = len(self.df)
-        unique_companies = self.df['company_name'].nunique()
-        latest_date = self.df['Date'].max().strftime('%Y-%m-%d')
+        total_docs = len(self.filtered_df)
+        unique_companies = self.filtered_df['company_name'].nunique()
+        latest_date = self.filtered_df['Date'].max().strftime('%Y-%m-%d')
         
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -77,6 +78,10 @@ class Dashboard:
             st.metric("Unique Companies", f"{unique_companies}")
         with col3:
             st.metric("Latest Update", f"{latest_date}")
+
+    def update_filter(self, start_date, end_date):
+        mask = (pd.to_datetime(self.df['decision_date']) >= start_date) & (pd.to_datetime(self.df['decision_date']) <= end_date)
+        self.filtered_df = self.df[mask]
 
     def display_charts(self):
         # Display recent documents table
@@ -95,7 +100,7 @@ class Dashboard:
         # )
 
         # Documents by company chart
-        docs_by_company = self.df['company_name'].value_counts().sort_values(ascending=True).tail(10)
+        docs_by_company = self.filtered_df['company_name'].value_counts().sort_values(ascending=True).tail(10)
         fig_company = px.bar(
             x=docs_by_company.values,
             y=docs_by_company.index,
@@ -106,7 +111,7 @@ class Dashboard:
         st.plotly_chart(fig_company, use_container_width=True)
 
         # Documents by product type
-        docs_by_product = self.df['product'].value_counts().head(10)
+        docs_by_product = self.filtered_df['product'].value_counts().head(10)
         fig_product = px.bar(
             x=docs_by_product.values,
             y=docs_by_product.index,
@@ -117,7 +122,7 @@ class Dashboard:
         # st.plotly_chart(fig_product, use_container_width=True)
 
         # Monthly documents by company stacked area chart
-        df_monthly = self.df.copy()
+        df_monthly = self.filtered_df.copy()
         df_monthly['Month'] = pd.to_datetime(df_monthly['decision_date']).dt.to_period('M').astype(str)
         monthly_company = pd.crosstab(df_monthly['Month'], df_monthly['company_name'])
         
@@ -150,6 +155,20 @@ def main():
     with dash_col:
         st.subheader("Dashboard")
         dashboard = Dashboard()
+        # Add date range slider
+        min_date = pd.to_datetime(dashboard.df['decision_date']).min()
+        max_date = pd.to_datetime(dashboard.df['decision_date']).max()
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            start_date = st.date_input("Start Date", min_date, min_value=min_date, max_value=max_date)
+        with col2:
+            end_date = st.date_input("End Date", max_date, min_value=min_date, max_value=max_date)
+        
+        # Update filtered data based on date range
+        dashboard.update_filter(start_date, end_date)
+        
+        # Display metrics and charts
         dashboard.display_metrics()
         
         # Charts in expandable section
