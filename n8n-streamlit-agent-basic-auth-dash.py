@@ -58,7 +58,7 @@ class Dashboard:
         df['Date'] = pd.to_datetime(df['created_at'])
         
         # Select and rename relevant columns
-        df = df[['Date', 'doc_id', 'company_name', 'decision', 'product', 'LB_complaint_case', 'decision_date']]
+        df = df[['Date', 'doc_id', 'company_short', 'decision', 'product', 'LB_complaint_case', 'decision_date']]
         
         # Sort by date
         df = df.sort_values('Date', ascending=False)
@@ -68,16 +68,17 @@ class Dashboard:
     def display_metrics(self):
         # Calculate summary metrics
         total_docs = len(self.filtered_df)
-        unique_companies = self.filtered_df['company_name'].nunique()
-        latest_date = self.filtered_df['Date'].max().strftime('%Y-%m-%d')
+        unique_companies = self.filtered_df['company_short'].nunique()
+        latest_doc = self.filtered_df['Date'].max().strftime('%Y-%m-%d')
+        first_doc = self.filtered_df['Date'].min().strftime('%Y-%m-%d')
         
         col1, col2, col3 = st.columns(3)
         with col1:
             st.metric("Total Documents", f"{total_docs}")
         with col2:
-            st.metric("Unique Companies", f"{unique_companies}")
+            st.metric("First Document", f"{first_doc}")
         with col3:
-            st.metric("Latest Update", f"{latest_date}")
+            st.metric("Last Document", f"{latest_doc}")
 
     def update_filter(self, start_datetime, end_datetime):
         decision_dates = pd.to_datetime(self.df['decision_date'])
@@ -91,7 +92,7 @@ class Dashboard:
         #     self.df.rename(columns={
         #         'Date': 'Data',
         #         'doc_id': 'Dokumento ID',
-        #         'company_name': 'Įmonė',
+        #         'company_short': 'Įmonė',
         #         'decision': 'Sprendimas',
         #         'product': 'Produktas',
         #         'LB_complaint_case': 'Bylos Nr.',
@@ -101,7 +102,7 @@ class Dashboard:
         # )
 
         # Documents by company chart
-        docs_by_company = self.filtered_df['company_name'].value_counts().sort_values(ascending=True).tail(10)
+        docs_by_company = self.filtered_df['company_short'].value_counts().sort_values(ascending=True).tail(10)
         fig_company = px.bar(
             x=docs_by_company.values,
             y=docs_by_company.index,
@@ -127,11 +128,11 @@ class Dashboard:
         df_monthly['Month'] = pd.to_datetime(df_monthly['decision_date']).dt.to_period('M').astype(str)
         
         # Company stacked chart
-        monthly_company = pd.crosstab(df_monthly['Month'], df_monthly['company_name'])
+        monthly_company = pd.crosstab(df_monthly['Month'], df_monthly['company_short'])
         fig_monthly_company = px.bar(
             monthly_company,
             title='Monthly Documents by Company',
-            labels={'value': 'Number of Documents', 'Month': 'Month', 'company_name': 'Company'},
+            labels={'value': 'Number of Documents', 'Month': 'Month', 'company_short': 'Company'},
             barmode='stack'
         )
         fig_monthly_company.update_layout(
@@ -160,6 +161,12 @@ class Dashboard:
 
 def main():
     st.set_page_config(layout="wide")
+    # Initialize session state
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    if "session_id" not in st.session_state:
+        st.session_state.session_id = generate_session_id()
+
     _, col2, _ = st.columns([0.1, 0.8, 0.1])
     
     with col2:
@@ -197,36 +204,31 @@ def main():
 
     # Chat interface on the right
     with chat_col:
-        
-        # Initialize session state
-        if "messages" not in st.session_state:
-            st.session_state.messages = []
-        if "session_id" not in st.session_state:
-            st.session_state.session_id = generate_session_id()
+        with st.container():
 
-        # Display chat messages
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.write(message["content"])
+            # Display chat messages
+            for message in st.session_state.messages:
+                with st.chat_message(message["role"]):
+                    st.write(message["content"])
 
-        # User input
-        user_input = st.chat_input("Type your message here...")
-    
-        if user_input:
-            # Add user message to chat history
-            st.session_state.messages.append({"role": "user", "content": user_input})
-            with st.chat_message("user"):
-                st.write(user_input)
+            # User input
+            user_input = st.chat_input("Type your message here...")
 
-            # Get LLM response with spinner on while waiting
-            with st.spinner('Sekundėlę ...'):
-                llm_response = send_message_to_llm(st.session_state.session_id, user_input)
-            
-            # Add LLM response to chat history
-            st.session_state.messages.append({"role": "assistant", "content": llm_response})
-            
-            with st.chat_message("assistant"):
-                st.write(llm_response)
+            if user_input:
+                # Add user message to chat history
+                st.session_state.messages.append({"role": "user", "content": user_input})
+                with st.chat_message("user"):
+                    st.write(user_input)
+
+                # Get LLM response with spinner on while waiting
+                with st.spinner('Sekundėlę ...'):
+                    llm_response = send_message_to_llm(st.session_state.session_id, user_input)
+                
+                # Add LLM response to chat history
+                st.session_state.messages.append({"role": "assistant", "content": llm_response})
+                
+                with st.chat_message("assistant"):
+                    st.write(llm_response)
 
 if __name__ == "__main__":
     main()
