@@ -181,14 +181,17 @@ def main():
         st.subheader("Dashboard")
         dashboard = Dashboard()
         # Add date range slider
-        min_date = pd.to_datetime(dashboard.df['decision_date']).min()
-        max_date = pd.to_datetime(dashboard.df['decision_date']).max()
+        min_date = pd.to_datetime(dashboard.df['decision_date']).min().date()
+        max_date = pd.to_datetime(dashboard.df['decision_date']).max().date()
         
-        col1, col2 = st.columns(2)
-        with col1:
-            start_date = st.date_input("Start Date", min_date, min_value=min_date, max_value=max_date)
-        with col2:
-            end_date = st.date_input("End Date", max_date, min_value=min_date, max_value=max_date)
+        dates = st.slider(
+            "Select Date Range",
+            min_value=min_date,
+            max_value=max_date,
+            value=(min_date, max_date),
+            format="YYYY-MM-DD"
+        )
+        start_date, end_date = dates
         
         # Update filtered data based on date range
         start_datetime = pd.to_datetime(start_date)
