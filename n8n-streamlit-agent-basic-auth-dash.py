@@ -207,7 +207,7 @@ def main():
 
     # Chat interface on the right
     with chat_col:
-        with st.container():
+        with st.container(border=True):
 
             # Display chat messages
             for message in st.session_state.messages:
