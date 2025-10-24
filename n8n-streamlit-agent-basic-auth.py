@@ -35,7 +35,7 @@ def main():
     if "session_id" not in st.session_state:
         st.session_state.session_id = generate_session_id()
     with st.chat_message("assistant"):
-            st.write('Nauji namai')
+            st.write('Nauji namai. Šis asistentas palaipsniui yra perkeliamas į naują adresą https://finragas.savaitgalioprojektai.lt. Kai asistentas pilnai persikels į naujus namus šie bus uždaryti ir atiduoti naujiems eksperimentams. Užsisaugokite nuorodą')
     # Display chat messages
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
